@@ -1,0 +1,22 @@
+name: applywise
+
+services:
+  backend:
+    build:
+      context: ./backend/ApplyWise.Api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      Ollama__BaseUrl: http://host.docker.internal:11434
+      Ollama__Model: ${OLLAMA_MODEL:-llama3.1:8b}
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    ports:
+      - "5232:8080"
+
+  frontend:
+    build:
+      context: ./frontend/applywise-client
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
