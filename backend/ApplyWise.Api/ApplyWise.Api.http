@@ -1,6 +1,12 @@
 @ApplyWise.Api_HostAddress = http://localhost:5232
 
-GET {{ApplyWise.Api_HostAddress}}/weatherforecast/
+POST {{ApplyWise.Api_HostAddress}}/api/job-match/analyze
+Content-Type: application/json
 Accept: application/json
+
+{
+  "resumeText": "C# and React developer",
+  "jobDescription": "We are looking for a full-stack developer."
+}
 
 ###
