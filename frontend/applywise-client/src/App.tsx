@@ -1,121 +1,83 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import { JobMatchForm } from './components/JobMatchForm'
+import { MatchResult } from './components/MatchResult'
+import { analyzeJobMatch } from './services/jobMatchApi'
+import type {
+  JobMatchRequest,
+  JobMatchResponse,
+} from './types/jobMatch'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [result, setResult] = useState<JobMatchResponse | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  async function handleAnalyze(request: JobMatchRequest) {
+    setIsLoading(true)
+    setError(null)
+    setResult(null)
+
+    try {
+      setResult(await analyzeJobMatch(request))
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'An unexpected error occurred.',
+      )
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
+    <main className="app-shell">
+      <header className="app-header">
+        <a className="brand" href="/" aria-label="ApplyWise AI home">
+          <span className="brand-mark">A</span>
+          <span>ApplyWise AI</span>
+        </a>
+        <span className="local-badge">
+          <span aria-hidden="true" />
+          Local-first · Ollama
+        </span>
+      </header>
+
+      <section className="hero-copy">
+        <p className="eyebrow">A clearer application starts here</p>
+        <h1>See how your experience matches the role.</h1>
+        <p>
+          Compare your resume with a job description and get an honest,
+          evidence-based analysis without sending your data to a paid AI API.
+        </p>
       </section>
 
-      <div className="ticks"></div>
+      <JobMatchForm isLoading={isLoading} onSubmit={handleAnalyze} />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+      {isLoading && (
+        <div className="status-card" role="status">
+          <span className="spinner" aria-hidden="true" />
+          <div>
+            <strong>Analyzing your match</strong>
+            <p>The local model is reading both documents.</p>
+          </div>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      )}
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      {error && (
+        <div className="status-card error-card" role="alert">
+          <strong>Analysis failed</strong>
+          <p>{error}</p>
+        </div>
+      )}
+
+      {result && <MatchResult result={result} />}
+
+      <footer>
+        ApplyWise AI · Your resume stays local
+      </footer>
+    </main>
   )
 }
 
