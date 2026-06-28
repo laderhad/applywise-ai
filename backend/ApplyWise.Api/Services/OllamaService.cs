@@ -12,6 +12,9 @@ public sealed class OllamaService
     private static readonly JsonSerializerOptions JsonOptions =
         new(JsonSerializerDefaults.Web);
 
+    private static readonly JsonElement AnalysisJsonSchema =
+        CreateAnalysisJsonSchema();
+
     private readonly HttpClient _httpClient;
     private readonly OllamaOptions _options;
     private readonly ILogger<OllamaService> _logger;
@@ -35,7 +38,7 @@ public sealed class OllamaService
             _options.Model,
             JobMatchPromptBuilder.Build(resumeText, jobDescription),
             Stream: false,
-            Format: "json",
+            AnalysisJsonSchema,
             new OllamaGenerateOptions(Temperature: 0));
 
         try
@@ -101,6 +104,11 @@ public sealed class OllamaService
         }
         catch (JsonException exception)
         {
+            _logger.LogWarning(
+                exception,
+                "Ollama response JSON could not be parsed at path {JsonPath}.",
+                exception.Path);
+
             throw new OllamaServiceException(
                 "Ollama returned JSON in an unexpected format.",
                 exception);
@@ -134,11 +142,65 @@ public sealed class OllamaService
         }
     }
 
+    private static JsonElement CreateAnalysisJsonSchema()
+    {
+        return JsonSerializer.SerializeToElement(
+            new
+            {
+                type = "object",
+                properties = new
+                {
+                    matchScore = new
+                    {
+                        type = "integer",
+                        minimum = 0,
+                        maximum = 100
+                    },
+                    strongPoints = new
+                    {
+                        type = "array",
+                        items = new { type = "string" }
+                    },
+                    weakPoints = new
+                    {
+                        type = "array",
+                        items = new { type = "string" }
+                    },
+                    missingKeywords = new
+                    {
+                        type = "array",
+                        items = new { type = "string" }
+                    },
+                    recommendedBullets = new
+                    {
+                        type = "array",
+                        items = new { type = "string" }
+                    },
+                    coverLetterDraft = new { type = "string" },
+                    linkedinMessageDraft = new { type = "string" },
+                    summary = new { type = "string" }
+                },
+                required = new[]
+                {
+                    "matchScore",
+                    "strongPoints",
+                    "weakPoints",
+                    "missingKeywords",
+                    "recommendedBullets",
+                    "coverLetterDraft",
+                    "linkedinMessageDraft",
+                    "summary"
+                },
+                additionalProperties = false
+            },
+            JsonOptions);
+    }
+
     private sealed record OllamaGenerateRequest(
         string Model,
         string Prompt,
         bool Stream,
-        string Format,
+        JsonElement Format,
         OllamaGenerateOptions Options);
 
     private sealed record OllamaGenerateOptions(double Temperature);
