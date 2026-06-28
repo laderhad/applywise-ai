@@ -1,4 +1,6 @@
 using ApplyWise.Api.Options;
+using ApplyWise.Api.Services;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +16,15 @@ builder.Services
         options => !string.IsNullOrWhiteSpace(options.Model),
         "Ollama:Model is required.")
     .ValidateOnStart();
+builder.Services.AddHttpClient<OllamaService>((serviceProvider, httpClient) =>
+{
+    var options = serviceProvider
+        .GetRequiredService<IOptions<OllamaOptions>>()
+        .Value;
+
+    httpClient.BaseAddress = new Uri($"{options.BaseUrl.TrimEnd('/')}/");
+    httpClient.Timeout = TimeSpan.FromMinutes(5);
+});
 
 var app = builder.Build();
 
