@@ -140,3 +140,4 @@ vector-cache/
 tmp/
 temp/
 .cache/
+instruction.md
