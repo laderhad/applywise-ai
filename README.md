@@ -66,7 +66,17 @@ docker compose up --build
 ```
 
 Open `http://localhost:5173`. The backend is also available directly at
-`http://localhost:5232`.
+`http://localhost:5232`. PostgreSQL is available at `localhost:5432`.
+
+The Compose defaults are intended only for local development. To customize
+them, copy the example environment file:
+
+```bash
+cp .env.example .env
+```
+
+Then edit `.env` before starting the stack. PostgreSQL data is stored in the
+named `postgres-data` volume, so it survives container recreation.
 
 To select another installed model:
 
@@ -78,6 +88,12 @@ Stop the containers:
 
 ```bash
 docker compose down
+```
+
+To also delete the local PostgreSQL data:
+
+```bash
+docker compose down --volumes
 ```
 
 ## API

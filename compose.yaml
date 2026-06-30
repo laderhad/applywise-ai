@@ -1,6 +1,25 @@
 name: applywise
 
 services:
+  database:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-applywise}
+      POSTGRES_USER: ${POSTGRES_USER:-applywise}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-applywise_dev}
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql
+
   backend:
     build:
       context: ./backend/ApplyWise.Api
@@ -20,3 +39,6 @@ services:
       - backend
     ports:
       - "5173:80"
+
+volumes:
+  postgres-data:
