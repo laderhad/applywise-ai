@@ -79,7 +79,22 @@ public sealed class OllamaService
                 JsonOptions);
 
             ValidateResult(result);
-            return result!;
+
+            var filteredResult =
+                EvidenceGuardrail.FilterUnsupportedClaims(
+                    resumeText,
+                    result!);
+
+            if (filteredResult.StrongPoints.Count <
+                    result!.StrongPoints.Count ||
+                filteredResult.RecommendedBullets.Count <
+                    result.RecommendedBullets.Count)
+            {
+                _logger.LogWarning(
+                    "Evidence guardrail removed unsupported analysis items.");
+            }
+
+            return filteredResult;
         }
         catch (OperationCanceledException)
             when (cancellationToken.IsCancellationRequested)
