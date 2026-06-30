@@ -25,6 +25,12 @@ ollama pull gemma3:4b
 
 ## Run for development
 
+Restore the repository's .NET tools:
+
+```bash
+dotnet tool restore
+```
+
 Start Ollama:
 
 ```bash

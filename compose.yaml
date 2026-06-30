@@ -23,8 +23,12 @@ services:
   backend:
     build:
       context: ./backend/ApplyWise.Api
+    depends_on:
+      database:
+        condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__Postgres: Host=database;Port=5432;Database=${POSTGRES_DB:-applywise};Username=${POSTGRES_USER:-applywise};Password=${POSTGRES_PASSWORD:-applywise_dev}
       Ollama__BaseUrl: http://host.docker.internal:11434
       Ollama__Model: ${OLLAMA_MODEL:-llama3.1:8b}
     extra_hosts:

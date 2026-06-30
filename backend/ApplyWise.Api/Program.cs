@@ -1,11 +1,20 @@
+using ApplyWise.Api.Data;
 using ApplyWise.Api.Options;
 using ApplyWise.Api.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var postgresConnectionString =
+    builder.Configuration.GetConnectionString("Postgres")
+    ?? throw new InvalidOperationException(
+        "ConnectionStrings:Postgres is required.");
+
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.AddDbContext<ApplyWiseDbContext>(options =>
+    options.UseNpgsql(postgresConnectionString));
 builder.Services
     .AddOptions<OllamaOptions>()
     .Bind(builder.Configuration.GetSection(OllamaOptions.SectionName))
