@@ -27,6 +27,42 @@ public class JobMatchController : ControllerBase
         _logger = logger;
     }
 
+    [HttpGet("history")]
+    public async Task<ActionResult<IReadOnlyList<
+        JobMatchHistoryItemResponse>>> GetHistory(
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var history = await _dbContext.JobMatchAnalyses
+                .AsNoTracking()
+                .OrderByDescending(item => item.CreatedAt)
+                .Select(item => new JobMatchHistoryItemResponse
+                {
+                    Id = item.Id,
+                    MatchScore = item.MatchScore,
+                    Summary = item.Summary,
+                    CreatedAt = item.CreatedAt
+                })
+                .Take(50)
+                .ToListAsync(cancellationToken);
+
+            return Ok(history);
+        }
+        catch (Exception exception)
+            when (IsDatabaseException(exception))
+        {
+            _logger.LogError(
+                exception,
+                "The job match history could not be loaded.");
+
+            return Problem(
+                statusCode: StatusCodes.Status503ServiceUnavailable,
+                title: "Analysis history unavailable",
+                detail: "The analysis history could not be loaded.");
+        }
+    }
+
     [HttpPost("analyze")]
     public async Task<ActionResult<AnalyzeJobMatchResponse>> Analyze(
         AnalyzeJobMatchRequest request,
