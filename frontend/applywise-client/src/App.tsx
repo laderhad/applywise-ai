@@ -3,6 +3,7 @@ import { JobMatchHistory } from './components/JobMatchHistory'
 import { JobMatchForm } from './components/JobMatchForm'
 import { MatchResult } from './components/MatchResult'
 import { useJobMatchHistory } from './hooks/useJobMatchHistory'
+import { useJobMatchHistoryDetail } from './hooks/useJobMatchHistoryDetail'
 import { analyzeJobMatch } from './services/jobMatchApi'
 import type { JobMatchRequest, JobMatchResponse } from './types/jobMatch'
 import './App.css'
@@ -17,6 +18,14 @@ function App() {
     isLoading: isHistoryLoading,
     refresh: refreshHistory,
   } = useJobMatchHistory()
+  const {
+    analysis: historyDetail,
+    clear: clearHistorySelection,
+    error: historyDetailError,
+    isLoading: isHistoryDetailLoading,
+    select: selectHistoryItem,
+    selectedId: selectedHistoryId,
+  } = useJobMatchHistoryDetail()
 
   async function handleAnalyze(request: JobMatchRequest) {
     setIsLoading(true)
@@ -81,9 +90,15 @@ function App() {
       {result && <MatchResult result={result} />}
 
       <JobMatchHistory
+        detail={historyDetail}
+        detailError={historyDetailError}
         error={historyError}
+        isDetailLoading={isHistoryDetailLoading}
         isLoading={isHistoryLoading}
         items={history}
+        onClearSelection={clearHistorySelection}
+        onSelect={selectHistoryItem}
+        selectedId={selectedHistoryId}
       />
 
       <footer>

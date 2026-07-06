@@ -20,3 +20,10 @@ export interface JobMatchHistoryItem {
   summary: string
   createdAt: string
 }
+
+export interface JobMatchHistoryDetail extends JobMatchResponse {
+  id: string
+  resumeText: string
+  jobDescription: string
+  createdAt: string
+}

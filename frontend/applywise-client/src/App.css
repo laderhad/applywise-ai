@@ -416,13 +416,32 @@ textarea:disabled {
 
 .history-card {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto 1fr auto;
   gap: 18px;
   align-items: center;
+  width: 100%;
   padding: 18px 20px;
+  color: inherit;
+  text-align: left;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 16px;
+  box-shadow: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.history-card:hover {
+  border-color: #adc8b7;
+  box-shadow: 0 10px 30px rgba(38, 61, 47, 0.08);
+  transform: translateY(-1px);
+}
+
+.history-card.selected {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(40, 122, 82, 0.1);
 }
 
 .history-score {
@@ -459,6 +478,80 @@ textarea:disabled {
   font-size: 0.75rem;
 }
 
+.history-action {
+  color: var(--brand);
+  font-size: 0.76rem;
+  font-weight: 750;
+}
+
+.history-list + .history-state {
+  margin-top: 16px;
+}
+
+.history-detail {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+.history-detail-toolbar {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.history-detail-toolbar time {
+  color: var(--ink-muted);
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.history-detail-toolbar button {
+  padding: 8px 11px;
+  color: var(--brand-dark);
+  font-size: 0.76rem;
+  font-weight: 750;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+}
+
+.source-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.source-card {
+  padding: 16px 18px;
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.source-card summary {
+  color: var(--ink);
+  font-size: 0.84rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.source-card p {
+  max-height: 220px;
+  margin: 14px 0 0;
+  overflow: auto;
+  color: var(--ink-muted);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.history-detail .results {
+  margin-top: 18px;
+}
+
 footer {
   padding: 48px 0 30px;
   color: var(--ink-muted);
@@ -492,7 +585,8 @@ footer {
 
   .input-grid,
   .result-grid,
-  .draft-grid {
+  .draft-grid,
+  .source-grid {
     grid-template-columns: 1fr;
   }
 
@@ -526,8 +620,13 @@ footer {
   }
 
   .history-card {
+    grid-template-columns: auto 1fr;
     align-items: start;
     padding: 16px;
+  }
+
+  .history-action {
+    grid-column: 2;
   }
 
   .score {

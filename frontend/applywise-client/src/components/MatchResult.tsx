@@ -1,7 +1,9 @@
 import type { JobMatchResponse } from '../types/jobMatch'
 
 interface MatchResultProps {
+  eyebrow?: string
   result: JobMatchResponse
+  title?: string
 }
 
 interface ListCardProps {
@@ -27,7 +29,11 @@ function ListCard({ title, items, tone }: ListCardProps) {
   )
 }
 
-export function MatchResult({ result }: MatchResultProps) {
+export function MatchResult({
+  eyebrow = 'Analysis complete',
+  result,
+  title = 'Your match at a glance',
+}: MatchResultProps) {
   return (
     <section className="results" aria-live="polite">
       <div className="result-overview">
@@ -45,8 +51,8 @@ export function MatchResult({ result }: MatchResultProps) {
         </div>
 
         <div>
-          <p className="eyebrow">Analysis complete</p>
-          <h2>Your match at a glance</h2>
+          <p className="eyebrow">{eyebrow}</p>
+          <h2>{title}</h2>
           <p className="summary">{result.summary}</p>
         </div>
       </div>

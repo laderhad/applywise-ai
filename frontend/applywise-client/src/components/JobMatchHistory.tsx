@@ -1,9 +1,19 @@
-import type { JobMatchHistoryItem } from '../types/jobMatch'
+import type {
+  JobMatchHistoryDetail,
+  JobMatchHistoryItem,
+} from '../types/jobMatch'
+import { JobMatchHistoryDetail as HistoryDetail } from './JobMatchHistoryDetail'
 
 interface JobMatchHistoryProps {
+  detail: JobMatchHistoryDetail | null
+  detailError: string | null
   error: string | null
+  isDetailLoading: boolean
   isLoading: boolean
   items: JobMatchHistoryItem[]
+  onClearSelection: () => void
+  onSelect: (id: string) => void
+  selectedId: string | null
 }
 
 const dateFormatter = new Intl.DateTimeFormat(undefined, {
@@ -12,9 +22,15 @@ const dateFormatter = new Intl.DateTimeFormat(undefined, {
 })
 
 export function JobMatchHistory({
+  detail,
+  detailError,
   error,
+  isDetailLoading,
   isLoading,
   items,
+  onClearSelection,
+  onSelect,
+  selectedId,
 }: JobMatchHistoryProps) {
   return (
     <section className="history-section" aria-labelledby="history-title">
@@ -51,7 +67,13 @@ export function JobMatchHistory({
         <ol className="history-list">
           {items.map((item) => (
             <li key={item.id}>
-              <article className="history-card">
+              <button
+                className={`history-card${selectedId === item.id ? ' selected' : ''}`}
+                type="button"
+                aria-controls="history-detail"
+                aria-expanded={selectedId === item.id}
+                onClick={() => onSelect(item.id)}
+              >
                 <div className="history-score">
                   <strong>{item.matchScore}</strong>
                   <span>/ 100</span>
@@ -62,10 +84,30 @@ export function JobMatchHistory({
                     {dateFormatter.format(new Date(item.createdAt))}
                   </time>
                 </div>
-              </article>
+                <span className="history-action">
+                  {selectedId === item.id
+                    ? isDetailLoading
+                      ? 'Loading…'
+                      : 'Viewing details'
+                    : 'View details'}
+                </span>
+              </button>
             </li>
           ))}
         </ol>
+      )}
+
+      {detailError && (
+        <div className="history-state history-error" role="alert">
+          {detailError}
+        </div>
+      )}
+
+      {detail && (
+        <HistoryDetail
+          analysis={detail}
+          onClose={onClearSelection}
+        />
       )}
     </section>
   )

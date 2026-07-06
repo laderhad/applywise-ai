@@ -1,4 +1,5 @@
 import type {
+  JobMatchHistoryDetail,
   JobMatchHistoryItem,
   JobMatchRequest,
   JobMatchResponse,
@@ -59,4 +60,21 @@ export async function getJobMatchHistory(): Promise<JobMatchHistoryItem[]> {
   }
 
   return (await response.json()) as JobMatchHistoryItem[]
+}
+
+export async function getJobMatchHistoryDetail(
+  id: string,
+): Promise<JobMatchHistoryDetail> {
+  const response = await fetch(`/api/job-match/history/${id}`)
+
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(
+        response,
+        'The saved analysis could not be loaded.',
+      ),
+    )
+  }
+
+  return (await response.json()) as JobMatchHistoryDetail
 }
