@@ -1,4 +1,5 @@
 using ApplyWise.Api.Data;
+using ApplyWise.Api.Infrastructure;
 using ApplyWise.Api.Options;
 using ApplyWise.Api.Services;
 using Microsoft.EntityFrameworkCore;
@@ -13,8 +14,12 @@ var postgresConnectionString =
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<ApiExceptionHandler>();
 builder.Services.AddDbContext<ApplyWiseDbContext>(options =>
     options.UseNpgsql(postgresConnectionString));
+builder.Services.AddScoped<JobMatchService>();
+builder.Services.AddScoped<JobMatchHistoryService>();
 builder.Services
     .AddOptions<OllamaOptions>()
     .Bind(builder.Configuration.GetSection(OllamaOptions.SectionName))
@@ -41,6 +46,8 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+app.UseExceptionHandler();
 
 app.MapControllers();
 
