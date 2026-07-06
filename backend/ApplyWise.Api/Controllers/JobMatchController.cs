@@ -63,6 +63,58 @@ public class JobMatchController : ControllerBase
         }
     }
 
+    [HttpGet("history/{id:guid}")]
+    public async Task<ActionResult<
+        JobMatchHistoryDetailResponse>> GetHistoryDetail(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var analysis = await _dbContext.JobMatchAnalyses
+                .AsNoTracking()
+                .Where(item => item.Id == id)
+                .Select(item => new JobMatchHistoryDetailResponse
+                {
+                    Id = item.Id,
+                    ResumeText = item.ResumeText,
+                    JobDescription = item.JobDescription,
+                    MatchScore = item.MatchScore,
+                    StrongPoints = item.StrongPoints,
+                    WeakPoints = item.WeakPoints,
+                    MissingKeywords = item.MissingKeywords,
+                    RecommendedBullets = item.RecommendedBullets,
+                    CoverLetterDraft = item.CoverLetterDraft,
+                    LinkedinMessageDraft = item.LinkedinMessageDraft,
+                    Summary = item.Summary,
+                    CreatedAt = item.CreatedAt
+                })
+                .SingleOrDefaultAsync(cancellationToken);
+
+            if (analysis is null)
+            {
+                return NotFound(new
+                {
+                    message = "Analysis not found."
+                });
+            }
+
+            return Ok(analysis);
+        }
+        catch (Exception exception)
+            when (IsDatabaseException(exception))
+        {
+            _logger.LogError(
+                exception,
+                "The job match analysis detail could not be loaded.");
+
+            return Problem(
+                statusCode: StatusCodes.Status503ServiceUnavailable,
+                title: "Analysis history unavailable",
+                detail: "The analysis detail could not be loaded.");
+        }
+    }
+
     [HttpPost("analyze")]
     public async Task<ActionResult<AnalyzeJobMatchResponse>> Analyze(
         AnalyzeJobMatchRequest request,
