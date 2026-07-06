@@ -1,4 +1,5 @@
 import type {
+  JobMatchHistoryItem,
   JobMatchRequest,
   JobMatchResponse,
 } from '../types/jobMatch'
@@ -7,6 +8,19 @@ interface ApiError {
   detail?: string
   message?: string
   title?: string
+}
+
+async function getErrorMessage(
+  response: Response,
+  fallbackMessage: string,
+): Promise<string> {
+  try {
+    const error = (await response.json()) as ApiError
+
+    return error.detail ?? error.message ?? error.title ?? fallbackMessage
+  } catch {
+    return fallbackMessage
+  }
 }
 
 export async function analyzeJobMatch(
@@ -21,21 +35,28 @@ export async function analyzeJobMatch(
   })
 
   if (!response.ok) {
-    let error: ApiError = {}
-
-    try {
-      error = (await response.json()) as ApiError
-    } catch {
-      // The fallback below handles non-JSON error responses.
-    }
-
     throw new Error(
-      error.detail ??
-        error.message ??
-        error.title ??
+      await getErrorMessage(
+        response,
         'The analysis could not be completed.',
+      ),
     )
   }
 
   return (await response.json()) as JobMatchResponse
+}
+
+export async function getJobMatchHistory(): Promise<JobMatchHistoryItem[]> {
+  const response = await fetch('/api/job-match/history')
+
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(
+        response,
+        'The analysis history could not be loaded.',
+      ),
+    )
+  }
+
+  return (await response.json()) as JobMatchHistoryItem[]
 }

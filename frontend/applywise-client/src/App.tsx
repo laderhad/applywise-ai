@@ -1,17 +1,22 @@
 import { useState } from 'react'
+import { JobMatchHistory } from './components/JobMatchHistory'
 import { JobMatchForm } from './components/JobMatchForm'
 import { MatchResult } from './components/MatchResult'
+import { useJobMatchHistory } from './hooks/useJobMatchHistory'
 import { analyzeJobMatch } from './services/jobMatchApi'
-import type {
-  JobMatchRequest,
-  JobMatchResponse,
-} from './types/jobMatch'
+import type { JobMatchRequest, JobMatchResponse } from './types/jobMatch'
 import './App.css'
 
 function App() {
   const [result, setResult] = useState<JobMatchResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const {
+    error: historyError,
+    history,
+    isLoading: isHistoryLoading,
+    refresh: refreshHistory,
+  } = useJobMatchHistory()
 
   async function handleAnalyze(request: JobMatchRequest) {
     setIsLoading(true)
@@ -20,6 +25,7 @@ function App() {
 
     try {
       setResult(await analyzeJobMatch(request))
+      void refreshHistory()
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -73,6 +79,12 @@ function App() {
       )}
 
       {result && <MatchResult result={result} />}
+
+      <JobMatchHistory
+        error={historyError}
+        isLoading={isHistoryLoading}
+        items={history}
+      />
 
       <footer>
         ApplyWise AI · Your resume stays local

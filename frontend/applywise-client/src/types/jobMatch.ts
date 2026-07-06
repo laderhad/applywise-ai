@@ -13,3 +13,10 @@ export interface JobMatchResponse {
   linkedinMessageDraft: string
   summary: string
 }
+
+export interface JobMatchHistoryItem {
+  id: string
+  matchScore: number
+  summary: string
+  createdAt: string
+}

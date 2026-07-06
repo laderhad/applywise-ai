@@ -354,6 +354,111 @@ textarea:disabled {
   white-space: pre-wrap;
 }
 
+.history-section {
+  margin-top: 64px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.section-heading .eyebrow {
+  margin-bottom: 8px;
+}
+
+.section-heading h2 {
+  margin: 0;
+  font-size: clamp(1.55rem, 3vw, 2.15rem);
+  letter-spacing: -0.035em;
+}
+
+.section-heading > span {
+  padding: 7px 10px;
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--surface-muted);
+  border-radius: 999px;
+}
+
+.history-state {
+  padding: 26px;
+  color: var(--ink-muted);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px dashed var(--border);
+  border-radius: 18px;
+}
+
+.history-state strong {
+  color: var(--ink);
+}
+
+.history-state p {
+  margin: 5px 0 0;
+}
+
+.history-error {
+  color: var(--danger);
+  background: var(--danger-soft);
+  border-color: #f0c9c5;
+}
+
+.history-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.history-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 18px;
+  align-items: center;
+  padding: 18px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+.history-score {
+  display: grid;
+  min-width: 68px;
+  padding: 11px 9px;
+  color: var(--brand-dark);
+  text-align: center;
+  background: var(--brand-soft);
+  border-radius: 12px;
+}
+
+.history-score strong {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.history-score span {
+  margin-top: 3px;
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.history-card p {
+  margin: 0;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.history-card time {
+  display: block;
+  margin-top: 6px;
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+}
+
 footer {
   padding: 48px 0 30px;
   color: var(--ink-muted);
@@ -414,6 +519,15 @@ footer {
     grid-template-columns: 1fr;
     justify-items: start;
     padding: 24px;
+  }
+
+  .history-section {
+    margin-top: 48px;
+  }
+
+  .history-card {
+    align-items: start;
+    padding: 16px;
   }
 
   .score {
