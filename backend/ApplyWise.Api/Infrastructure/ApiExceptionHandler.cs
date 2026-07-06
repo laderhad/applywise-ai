@@ -45,6 +45,14 @@ public sealed class ApiExceptionHandler : IExceptionHandler
         string Title,
         string Detail)? GetProblem(Exception exception)
     {
+        if (exception is PdfTextExtractionException)
+        {
+            return (
+                StatusCodes.Status422UnprocessableEntity,
+                "PDF text extraction failed",
+                exception.Message);
+        }
+
         if (exception is OllamaServiceException)
         {
             return (

@@ -21,6 +21,7 @@ builder.Services.AddDbContext<ApplyWiseDbContext>(options =>
 builder.Services.AddScoped<JobMatchService>();
 builder.Services.AddScoped<JobMatchHistoryService>();
 builder.Services.AddSingleton<PdfUploadValidator>();
+builder.Services.AddSingleton<PdfTextExtractor>();
 builder.Services
     .AddOptions<OllamaOptions>()
     .Bind(builder.Configuration.GetSection(OllamaOptions.SectionName))
