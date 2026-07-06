@@ -10,3 +10,16 @@ Accept: application/json
 }
 
 ###
+
+POST {{ApplyWise.Api_HostAddress}}/api/resumes/upload
+Accept: application/json
+Content-Type: multipart/form-data; boundary=ResumeBoundary
+
+--ResumeBoundary
+Content-Disposition: form-data; name="file"; filename="resume.pdf"
+Content-Type: application/pdf
+
+< ./resume.pdf
+--ResumeBoundary--
+
+###
