@@ -1,5 +1,7 @@
 using ApplyWise.Api.Data;
 using ApplyWise.Api.Models.Responses;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace ApplyWise.Api.Services;
@@ -9,10 +11,14 @@ public sealed class JobMatchHistoryService
     private const int HistoryLimit = 50;
 
     private readonly ApplyWiseDbContext _dbContext;
+    private readonly IMapper _mapper;
 
-    public JobMatchHistoryService(ApplyWiseDbContext dbContext)
+    public JobMatchHistoryService(
+        ApplyWiseDbContext dbContext,
+        IMapper mapper)
     {
         _dbContext = dbContext;
+        _mapper = mapper;
     }
 
     public async Task<IReadOnlyList<
@@ -22,14 +28,9 @@ public sealed class JobMatchHistoryService
         return await _dbContext.JobMatchAnalyses
             .AsNoTracking()
             .OrderByDescending(item => item.CreatedAt)
-            .Select(item => new JobMatchHistoryItemResponse
-            {
-                Id = item.Id,
-                MatchScore = item.MatchScore,
-                Summary = item.Summary,
-                CreatedAt = item.CreatedAt
-            })
             .Take(HistoryLimit)
+            .ProjectTo<JobMatchHistoryItemResponse>(
+                _mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
     }
 
@@ -41,21 +42,8 @@ public sealed class JobMatchHistoryService
         return await _dbContext.JobMatchAnalyses
             .AsNoTracking()
             .Where(item => item.Id == id)
-            .Select(item => new JobMatchHistoryDetailResponse
-            {
-                Id = item.Id,
-                ResumeText = item.ResumeText,
-                JobDescription = item.JobDescription,
-                MatchScore = item.MatchScore,
-                StrongPoints = item.StrongPoints,
-                WeakPoints = item.WeakPoints,
-                MissingKeywords = item.MissingKeywords,
-                RecommendedBullets = item.RecommendedBullets,
-                CoverLetterDraft = item.CoverLetterDraft,
-                LinkedinMessageDraft = item.LinkedinMessageDraft,
-                Summary = item.Summary,
-                CreatedAt = item.CreatedAt
-            })
+            .ProjectTo<JobMatchHistoryDetailResponse>(
+                _mapper.ConfigurationProvider)
             .SingleOrDefaultAsync(cancellationToken);
     }
 }

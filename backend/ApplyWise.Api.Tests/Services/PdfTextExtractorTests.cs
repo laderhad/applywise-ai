@@ -45,10 +45,8 @@ public class PdfTextExtractorTests
         using var stream = new MemoryStream(
             "%PDF-not-a-document"u8.ToArray());
 
-        var exception = Assert.Throws<PdfTextExtractionException>(
+        Assert.Throws<PdfDocumentFormatException>(
             () => _extractor.Extract(stream));
-
-        Assert.Equal("The PDF could not be read.", exception.Message);
     }
 
     private static MemoryStream CreatePdf(string? text = null)

@@ -1,7 +1,9 @@
+using System.Text.Json;
 using ApplyWise.Api.Services;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using UglyToad.PdfPig.Core;
 
 namespace ApplyWise.Api.Infrastructure;
 
@@ -19,14 +21,19 @@ public sealed class ApiExceptionHandler : IExceptionHandler
         Exception exception,
         CancellationToken cancellationToken)
     {
-        var problem = GetProblem(exception);
+        var problem = GetProblem(exception, httpContext);
 
         if (problem is null)
         {
             return false;
         }
 
-        _logger.LogError(
+        var logLevel = problem.Value.StatusCode >= 500
+            ? LogLevel.Error
+            : LogLevel.Warning;
+
+        _logger.Log(
+            logLevel,
             exception,
             "Request failed with status code {StatusCode}.",
             problem.Value.StatusCode);
@@ -43,8 +50,24 @@ public sealed class ApiExceptionHandler : IExceptionHandler
     private static (
         int StatusCode,
         string Title,
-        string Detail)? GetProblem(Exception exception)
+        string Detail)? GetProblem(
+        Exception exception,
+        HttpContext httpContext)
     {
+        if (exception is OperationCanceledException &&
+            httpContext.RequestAborted.IsCancellationRequested)
+        {
+            return null;
+        }
+
+        if (exception is ResumeUploadValidationException)
+        {
+            return (
+                StatusCodes.Status400BadRequest,
+                "Resume upload validation failed",
+                exception.Message);
+        }
+
         if (exception is PdfTextExtractionException)
         {
             return (
@@ -53,12 +76,45 @@ public sealed class ApiExceptionHandler : IExceptionHandler
                 exception.Message);
         }
 
+        if (exception is PdfDocumentFormatException)
+        {
+            return (
+                StatusCodes.Status422UnprocessableEntity,
+                "PDF text extraction failed",
+                "The PDF could not be read.");
+        }
+
         if (exception is OllamaServiceException)
         {
             return (
                 StatusCodes.Status502BadGateway,
                 "Ollama analysis failed",
                 exception.Message);
+        }
+
+        if (exception is TaskCanceledException)
+        {
+            return (
+                StatusCodes.Status504GatewayTimeout,
+                "Ollama analysis timed out",
+                "Ollama did not respond before the request timed out.");
+        }
+
+        if (exception is HttpRequestException)
+        {
+            return (
+                StatusCodes.Status502BadGateway,
+                "Ollama analysis failed",
+                "Could not connect to Ollama. "
+                + "Make sure it is running locally.");
+        }
+
+        if (exception is JsonException)
+        {
+            return (
+                StatusCodes.Status502BadGateway,
+                "Ollama analysis failed",
+                "Ollama returned JSON in an unexpected format.");
         }
 
         if (IsDatabaseException(exception))

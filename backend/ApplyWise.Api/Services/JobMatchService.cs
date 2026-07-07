@@ -1,6 +1,7 @@
 using ApplyWise.Api.Data;
 using ApplyWise.Api.Data.Entities;
 using ApplyWise.Api.Models.Responses;
+using AutoMapper;
 
 namespace ApplyWise.Api.Services;
 
@@ -8,13 +9,16 @@ public sealed class JobMatchService
 {
     private readonly OllamaService _ollamaService;
     private readonly ApplyWiseDbContext _dbContext;
+    private readonly IMapper _mapper;
 
     public JobMatchService(
         OllamaService ollamaService,
-        ApplyWiseDbContext dbContext)
+        ApplyWiseDbContext dbContext,
+        IMapper mapper)
     {
         _ollamaService = ollamaService;
         _dbContext = dbContext;
+        _mapper = mapper;
     }
 
     public async Task<AnalyzeJobMatchResponse> AnalyzeAsync(
@@ -27,31 +31,14 @@ public sealed class JobMatchService
             jobDescription,
             cancellationToken);
 
-        _dbContext.JobMatchAnalyses.Add(
-            CreateAnalysis(resumeText, jobDescription, response));
+        var analysis = _mapper.Map<JobMatchAnalysis>(response);
+        analysis.ResumeText = resumeText;
+        analysis.JobDescription = jobDescription;
+
+        _dbContext.JobMatchAnalyses.Add(analysis);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return response;
-    }
-
-    private static JobMatchAnalysis CreateAnalysis(
-        string resumeText,
-        string jobDescription,
-        AnalyzeJobMatchResponse response)
-    {
-        return new JobMatchAnalysis
-        {
-            ResumeText = resumeText,
-            JobDescription = jobDescription,
-            MatchScore = response.MatchScore,
-            StrongPoints = [.. response.StrongPoints],
-            WeakPoints = [.. response.WeakPoints],
-            MissingKeywords = [.. response.MissingKeywords],
-            RecommendedBullets = [.. response.RecommendedBullets],
-            CoverLetterDraft = response.CoverLetterDraft,
-            LinkedinMessageDraft = response.LinkedinMessageDraft,
-            Summary = response.Summary
-        };
     }
 }

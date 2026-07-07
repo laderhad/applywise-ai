@@ -8,15 +8,11 @@ namespace ApplyWise.Api.Controllers;
 [Route("api/resumes")]
 public sealed class ResumeController : ControllerBase
 {
-    private readonly PdfUploadValidator _pdfUploadValidator;
-    private readonly PdfTextExtractor _pdfTextExtractor;
+    private readonly ResumeUploadService _resumeUploadService;
 
-    public ResumeController(
-        PdfUploadValidator pdfUploadValidator,
-        PdfTextExtractor pdfTextExtractor)
+    public ResumeController(ResumeUploadService resumeUploadService)
     {
-        _pdfUploadValidator = pdfUploadValidator;
-        _pdfTextExtractor = pdfTextExtractor;
+        _resumeUploadService = resumeUploadService;
     }
 
     [HttpPost("upload")]
@@ -26,25 +22,10 @@ public sealed class ResumeController : ControllerBase
         [FromForm] IFormFile? file,
         CancellationToken cancellationToken)
     {
-        var validationError =
-            await _pdfUploadValidator.GetValidationErrorAsync(
-                file,
-                cancellationToken);
+        var response = await _resumeUploadService.UploadAsync(
+            file,
+            cancellationToken);
 
-        if (validationError is not null)
-        {
-            return BadRequest(new { message = validationError });
-        }
-
-        using var stream = file!.OpenReadStream();
-        var extraction = _pdfTextExtractor.Extract(stream);
-
-        return Ok(new ResumeUploadResponse
-        {
-            FileName = Path.GetFileName(file.FileName),
-            SizeBytes = file.Length,
-            PageCount = extraction.PageCount,
-            ExtractedText = extraction.Text
-        });
+        return Ok(response);
     }
 }

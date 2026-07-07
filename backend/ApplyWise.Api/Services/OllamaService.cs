@@ -41,93 +41,58 @@ public sealed class OllamaService
             AnalysisJsonSchema,
             new OllamaGenerateOptions(Temperature: 0));
 
-        try
+        using var response = await _httpClient.PostAsJsonAsync(
+            "api/generate",
+            request,
+            JsonOptions,
+            cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
         {
-            using var response = await _httpClient.PostAsJsonAsync(
-                "api/generate",
-                request,
+            var errorBody = await response.Content.ReadAsStringAsync(
+                cancellationToken);
+
+            _logger.LogWarning(
+                "Ollama returned status {StatusCode}: {ErrorBody}",
+                (int)response.StatusCode,
+                errorBody);
+
+            throw new OllamaServiceException(
+                $"Ollama returned HTTP {(int)response.StatusCode}.");
+        }
+
+        var generateResponse =
+            await response.Content.ReadFromJsonAsync<OllamaGenerateResponse>(
                 JsonOptions,
                 cancellationToken);
 
-            if (!response.IsSuccessStatusCode)
-            {
-                var errorBody = await response.Content.ReadAsStringAsync(
-                    cancellationToken);
-
-                _logger.LogWarning(
-                    "Ollama returned status {StatusCode}: {ErrorBody}",
-                    (int)response.StatusCode,
-                    errorBody);
-
-                throw new OllamaServiceException(
-                    $"Ollama returned HTTP {(int)response.StatusCode}.");
-            }
-
-            var generateResponse =
-                await response.Content.ReadFromJsonAsync<OllamaGenerateResponse>(
-                    JsonOptions,
-                    cancellationToken);
-
-            if (string.IsNullOrWhiteSpace(generateResponse?.Response))
-            {
-                throw new OllamaServiceException(
-                    "Ollama returned an empty response.");
-            }
-
-            var result = JsonSerializer.Deserialize<AnalyzeJobMatchResponse>(
-                generateResponse.Response,
-                JsonOptions);
-
-            ValidateResult(result);
-
-            var filteredResult =
-                EvidenceGuardrail.FilterUnsupportedClaims(
-                    resumeText,
-                    result!);
-
-            if (filteredResult.StrongPoints.Count <
-                    result!.StrongPoints.Count ||
-                filteredResult.RecommendedBullets.Count <
-                    result.RecommendedBullets.Count)
-            {
-                _logger.LogWarning(
-                    "Evidence guardrail removed unsupported analysis items.");
-            }
-
-            return filteredResult;
-        }
-        catch (OperationCanceledException)
-            when (cancellationToken.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (OllamaServiceException)
-        {
-            throw;
-        }
-        catch (TaskCanceledException exception)
+        if (string.IsNullOrWhiteSpace(generateResponse?.Response))
         {
             throw new OllamaServiceException(
-                "Ollama did not respond before the request timed out.",
-                exception);
+                "Ollama returned an empty response.");
         }
-        catch (HttpRequestException exception)
-        {
-            throw new OllamaServiceException(
-                "Could not connect to Ollama. Make sure it is running locally.",
-                exception);
-        }
-        catch (JsonException exception)
+
+        var result = JsonSerializer.Deserialize<AnalyzeJobMatchResponse>(
+            generateResponse.Response,
+            JsonOptions);
+
+        ValidateResult(result);
+
+        var filteredResult =
+            EvidenceGuardrail.FilterUnsupportedClaims(
+                resumeText,
+                result!);
+
+        if (filteredResult.StrongPoints.Count <
+                result!.StrongPoints.Count ||
+            filteredResult.RecommendedBullets.Count <
+                result.RecommendedBullets.Count)
         {
             _logger.LogWarning(
-                exception,
-                "Ollama response JSON could not be parsed at path {JsonPath}.",
-                exception.Path);
-
-            throw new OllamaServiceException(
-                "Ollama returned JSON in an unexpected format.",
-                exception);
+                "Evidence guardrail removed unsupported analysis items.");
         }
+
+        return filteredResult;
     }
 
     private static void ValidateResult(AnalyzeJobMatchResponse? result)
