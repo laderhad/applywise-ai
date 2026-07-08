@@ -8,8 +8,23 @@ import type {
 
 interface ApiError {
   detail?: string
+  errors?: Record<string, string[]>
   message?: string
   title?: string
+}
+
+function getValidationErrorMessage(error: ApiError): string | null {
+  if (!error.errors) {
+    return null
+  }
+
+  const messages = Object.values(error.errors)
+    .flat()
+    .filter((message) => message.trim().length > 0)
+
+  return messages.length > 0
+    ? messages.join(' ')
+    : null
 }
 
 async function getErrorMessage(
@@ -19,7 +34,13 @@ async function getErrorMessage(
   try {
     const error = (await response.json()) as ApiError
 
-    return error.detail ?? error.message ?? error.title ?? fallbackMessage
+    return (
+      getValidationErrorMessage(error) ??
+      error.detail ??
+      error.message ??
+      error.title ??
+      fallbackMessage
+    )
   } catch {
     return fallbackMessage
   }
