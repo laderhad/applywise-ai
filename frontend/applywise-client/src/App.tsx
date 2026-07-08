@@ -49,23 +49,29 @@ function App() {
   return (
     <main className="app-shell">
       <header className="app-header">
-        <a className="brand" href="/" aria-label="ApplyWise AI home">
+        <a className="brand" href="/" aria-label="ApplyWise home">
           <span className="brand-mark">A</span>
-          <span>ApplyWise AI</span>
+          <span>ApplyWise</span>
         </a>
         <span className="local-badge">
           <span aria-hidden="true" />
-          Local-first · Ollama
+          Private workspace
         </span>
       </header>
 
       <section className="hero-copy">
-        <p className="eyebrow">A clearer application starts here</p>
-        <h1>See how your experience matches the role.</h1>
+        <p className="eyebrow">Resume match workspace</p>
+        <h1>Compare your resume with the role before you apply.</h1>
         <p>
-          Compare your resume with a job description and get an honest,
-          evidence-based analysis without sending your data to a paid AI API.
+          Upload a PDF or paste your resume, add the job description, and
+          review the gaps, strengths, and edits worth making before you send
+          the application.
         </p>
+        <div className="hero-meta" aria-label="Analysis workflow">
+          <span>PDF or pasted resume</span>
+          <span>Role description</span>
+          <span>Actionable match report</span>
+        </div>
       </section>
 
       <JobMatchForm isLoading={isLoading} onSubmit={handleAnalyze} />
@@ -102,7 +108,7 @@ function App() {
       />
 
       <footer>
-        ApplyWise AI · Your resume stays local
+        ApplyWise · Resume review workspace
       </footer>
     </main>
   )

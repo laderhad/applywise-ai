@@ -36,7 +36,7 @@ export function JobMatchHistory({
     <section className="history-section" aria-labelledby="history-title">
       <div className="section-heading">
         <div>
-          <p className="eyebrow">Saved locally</p>
+          <p className="eyebrow">Saved work</p>
           <h2 id="history-title">Recent analyses</h2>
         </div>
         {!isLoading && !error && items.length > 0 && (
@@ -59,7 +59,7 @@ export function JobMatchHistory({
       {!isLoading && !error && items.length === 0 && (
         <div className="history-state">
           <strong>No analyses yet</strong>
-          <p>Your completed analyses will appear here.</p>
+          <p>Run your first comparison to build a small application history.</p>
         </div>
       )}
 

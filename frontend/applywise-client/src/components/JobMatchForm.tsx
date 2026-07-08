@@ -91,14 +91,30 @@ export function JobMatchForm({
 
   return (
     <form className="match-form" onSubmit={handleSubmit}>
+      <div className="form-heading">
+        <div>
+          <p className="eyebrow">New analysis</p>
+          <h2>Start with your resume and target role</h2>
+        </div>
+        <span>Nothing is submitted until you run the analysis.</span>
+      </div>
+
       <div className="input-grid">
         <div className="text-field">
           <span className="field-heading">
             <label htmlFor="resume-text">Resume</label>
-            <small>Paste text or upload PDF</small>
+            <small>PDF upload or plain text</small>
           </span>
 
           <div className="resume-upload">
+            <div>
+              <strong>Resume PDF</strong>
+              <span>
+                {resumeUpload
+                  ? `${resumeUpload.fileName} · ${resumeUpload.pageCount} page${resumeUpload.pageCount === 1 ? '' : 's'} extracted`
+                  : `Max ${maxResumePdfSizeLabel}, selectable text only`}
+              </span>
+            </div>
             <label className="file-upload-button">
               <input
                 type="file"
@@ -106,13 +122,8 @@ export function JobMatchForm({
                 disabled={isLoading || isResumeUploading}
                 onChange={handleResumeFileChange}
               />
-              {isResumeUploading ? 'Extracting PDF…' : 'Upload PDF'}
+              {isResumeUploading ? 'Extracting…' : 'Choose PDF'}
             </label>
-            <span>
-              {resumeUpload
-                ? `${resumeUpload.fileName} · ${resumeUpload.pageCount} page${resumeUpload.pageCount === 1 ? '' : 's'}`
-                : `Max ${maxResumePdfSizeLabel}, selectable text only`}
-            </span>
           </div>
 
           {resumeUploadError && (
@@ -128,7 +139,7 @@ export function JobMatchForm({
               setResumeText(event.target.value)
               setResumeUpload(null)
             }}
-            placeholder="Paste your resume text here..."
+            placeholder="Paste your resume text here, or upload a PDF above..."
             rows={14}
             disabled={isLoading || isResumeUploading}
           />
@@ -143,7 +154,7 @@ export function JobMatchForm({
             id="job-description"
             value={jobDescription}
             onChange={(event) => setJobDescription(event.target.value)}
-            placeholder="Paste the job description here..."
+            placeholder="Paste the role description, requirements, and responsibilities here..."
             rows={14}
             disabled={isLoading}
           />
@@ -151,13 +162,13 @@ export function JobMatchForm({
       </div>
 
       <div className="form-footer">
-        <p>Your data stays on your machine and is analyzed by local Ollama.</p>
+        <p>You can edit extracted text before running the comparison.</p>
         <button type="submit" disabled={!canSubmit}>
           {isResumeUploading
             ? 'Extracting resume…'
             : isLoading
               ? 'Analyzing…'
-              : 'Analyze match'}
+              : 'Run analysis'}
         </button>
       </div>
     </form>

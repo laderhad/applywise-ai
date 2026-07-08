@@ -40,7 +40,7 @@ export function JobMatchHistoryDetail({
       <MatchResult
         eyebrow="Saved analysis"
         result={analysis}
-        title="Your previous match at a glance"
+        title="Saved match report"
       />
     </div>
   )
