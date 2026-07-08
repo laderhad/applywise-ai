@@ -57,16 +57,6 @@ public class JobMatchController : ControllerBase
         AnalyzeJobMatchRequest request,
         CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(request.ResumeText))
-        {
-            return BadRequest(new { message = "Resume text is required." });
-        }
-
-        if (string.IsNullOrWhiteSpace(request.JobDescription))
-        {
-            return BadRequest(new { message = "Job description is required." });
-        }
-
         var response = await _jobMatchService.AnalyzeAsync(
             request.ResumeText,
             request.JobDescription,
