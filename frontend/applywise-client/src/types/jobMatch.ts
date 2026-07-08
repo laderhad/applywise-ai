@@ -3,6 +3,13 @@ export interface JobMatchRequest {
   jobDescription: string
 }
 
+export interface ResumeUploadResponse {
+  fileName: string
+  sizeBytes: number
+  pageCount: number
+  extractedText: string
+}
+
 export interface JobMatchResponse {
   matchScore: number
   strongPoints: string[]

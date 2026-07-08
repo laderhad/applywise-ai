@@ -3,6 +3,7 @@ import type {
   JobMatchHistoryItem,
   JobMatchRequest,
   JobMatchResponse,
+  ResumeUploadResponse,
 } from '../types/jobMatch'
 
 interface ApiError {
@@ -45,6 +46,29 @@ export async function analyzeJobMatch(
   }
 
   return (await response.json()) as JobMatchResponse
+}
+
+export async function uploadResumePdf(
+  file: File,
+): Promise<ResumeUploadResponse> {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const response = await fetch('/api/resumes/upload', {
+    method: 'POST',
+    body: formData,
+  })
+
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(
+        response,
+        'The resume PDF could not be uploaded.',
+      ),
+    )
+  }
+
+  return (await response.json()) as ResumeUploadResponse
 }
 
 export async function getJobMatchHistory(): Promise<JobMatchHistoryItem[]> {
