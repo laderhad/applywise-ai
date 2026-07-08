@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+import { useI18n } from '../i18n/useI18n'
 import type { JobMatchHistoryDetail as HistoryDetail } from '../types/jobMatch'
 import { MatchResult } from './MatchResult'
 
@@ -6,41 +8,48 @@ interface JobMatchHistoryDetailProps {
   onClose: () => void
 }
 
-const dateFormatter = new Intl.DateTimeFormat(undefined, {
-  dateStyle: 'long',
-  timeStyle: 'short',
-})
-
 export function JobMatchHistoryDetail({
   analysis,
   onClose,
 }: JobMatchHistoryDetailProps) {
+  const { locale, t } = useI18n()
+  const dateFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale, {
+        dateStyle: 'long',
+        timeStyle: 'short',
+      }),
+    [locale],
+  )
+
   return (
     <div className="history-detail" id="history-detail">
       <div className="history-detail-toolbar">
         <time dateTime={analysis.createdAt}>
-          Saved {dateFormatter.format(new Date(analysis.createdAt))}
+          {t('historyDetail.savedAt', {
+            date: dateFormatter.format(new Date(analysis.createdAt)),
+          })}
         </time>
         <button type="button" onClick={onClose}>
-          Close details
+          {t('historyDetail.close')}
         </button>
       </div>
 
       <div className="source-grid">
         <details className="source-card">
-          <summary>Resume text</summary>
+          <summary>{t('historyDetail.resumeText')}</summary>
           <p>{analysis.resumeText}</p>
         </details>
         <details className="source-card">
-          <summary>Job description</summary>
+          <summary>{t('historyDetail.jobDescription')}</summary>
           <p>{analysis.jobDescription}</p>
         </details>
       </div>
 
       <MatchResult
-        eyebrow="Saved analysis"
+        eyebrow={t('historyDetail.savedAnalysis')}
         result={analysis}
-        title="Saved match report"
+        title={t('historyDetail.savedReport')}
       />
     </div>
   )

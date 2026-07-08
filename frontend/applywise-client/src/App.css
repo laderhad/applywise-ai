@@ -34,6 +34,12 @@
   border-radius: 8px;
 }
 
+.header-actions {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+}
+
 .local-badge {
   display: inline-flex;
   gap: 8px;
@@ -52,6 +58,37 @@
   height: 7px;
   background: var(--success);
   border-radius: 999px;
+}
+
+.language-switcher {
+  display: inline-flex;
+  padding: 3px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.language-switcher button {
+  min-width: 36px;
+  padding: 5px 9px;
+  color: var(--ink-muted);
+  font-size: 0.72rem;
+  font-weight: 760;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  transition:
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.language-switcher button:hover {
+  color: var(--brand-dark);
+}
+
+.language-switcher button.active {
+  color: #ffffff;
+  background: var(--brand);
 }
 
 .hero-copy {
@@ -819,6 +856,16 @@ footer {
   .local-badge {
     padding: 6px 9px;
     font-size: 0.7rem;
+  }
+
+  .header-actions {
+    gap: 7px;
+  }
+
+  .language-switcher button {
+    min-width: 32px;
+    padding: 5px 7px;
+    font-size: 0.68rem;
   }
 
   .match-form,

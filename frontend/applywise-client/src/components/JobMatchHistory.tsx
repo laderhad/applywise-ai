@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+import { useI18n } from '../i18n/useI18n'
 import type {
   JobMatchHistoryDetail,
   JobMatchHistoryItem,
@@ -16,11 +18,6 @@ interface JobMatchHistoryProps {
   selectedId: string | null
 }
 
-const dateFormatter = new Intl.DateTimeFormat(undefined, {
-  dateStyle: 'medium',
-  timeStyle: 'short',
-})
-
 export function JobMatchHistory({
   detail,
   detailError,
@@ -32,21 +29,31 @@ export function JobMatchHistory({
   onSelect,
   selectedId,
 }: JobMatchHistoryProps) {
+  const { locale, t } = useI18n()
+  const dateFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale, {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      }),
+    [locale],
+  )
+
   return (
     <section className="history-section" aria-labelledby="history-title">
       <div className="section-heading">
         <div>
-          <p className="eyebrow">Saved work</p>
-          <h2 id="history-title">Recent analyses</h2>
+          <p className="eyebrow">{t('history.eyebrow')}</p>
+          <h2 id="history-title">{t('history.title')}</h2>
         </div>
         {!isLoading && !error && items.length > 0 && (
-          <span>{items.length} saved</span>
+          <span>{t('history.savedCount', { count: items.length })}</span>
         )}
       </div>
 
       {isLoading && (
         <div className="history-state" role="status">
-          Loading recent analyses…
+          {t('history.loading')}
         </div>
       )}
 
@@ -58,8 +65,8 @@ export function JobMatchHistory({
 
       {!isLoading && !error && items.length === 0 && (
         <div className="history-state">
-          <strong>No analyses yet</strong>
-          <p>Run your first comparison to build a small application history.</p>
+          <strong>{t('history.empty.title')}</strong>
+          <p>{t('history.empty.body')}</p>
         </div>
       )}
 
@@ -76,7 +83,7 @@ export function JobMatchHistory({
               >
                 <div className="history-score">
                   <strong>{item.matchScore}</strong>
-                  <span>/ 100</span>
+                  <span>{t('history.scoreSuffix')}</span>
                 </div>
                 <div>
                   <p>{item.summary}</p>
@@ -87,9 +94,9 @@ export function JobMatchHistory({
                 <span className="history-action">
                   {selectedId === item.id
                     ? isDetailLoading
-                      ? 'Loading…'
-                      : 'Viewing details'
-                    : 'View details'}
+                      ? t('history.loadingDetails')
+                      : t('history.viewingDetails')
+                    : t('history.viewDetails')}
                 </span>
               </button>
             </li>

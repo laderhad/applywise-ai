@@ -32,11 +32,15 @@ public sealed class OllamaService
     public async Task<AnalyzeJobMatchResponse> AnalyzeAsync(
         string resumeText,
         string jobDescription,
+        string language,
         CancellationToken cancellationToken = default)
     {
         var request = new OllamaGenerateRequest(
             _options.Model,
-            JobMatchPromptBuilder.Build(resumeText, jobDescription),
+            JobMatchPromptBuilder.Build(
+                resumeText,
+                jobDescription,
+                language),
             Stream: false,
             AnalysisJsonSchema,
             new OllamaGenerateOptions(Temperature: 0));

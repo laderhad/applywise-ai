@@ -1,3 +1,4 @@
+import { useI18n } from '../i18n/useI18n'
 import type { JobMatchResponse } from '../types/jobMatch'
 
 interface MatchResultProps {
@@ -14,6 +15,8 @@ interface ListCardProps {
 }
 
 function ListCard({ description, title, items, tone }: ListCardProps) {
+  const { t } = useI18n()
+
   return (
     <section className={`result-card list-card ${tone}`}>
       <div className="result-card-header">
@@ -30,25 +33,29 @@ function ListCard({ description, title, items, tone }: ListCardProps) {
           ))}
         </ul>
       ) : (
-        <p className="empty-copy">Nothing to highlight.</p>
+        <p className="empty-copy">{t('result.empty')}</p>
       )}
     </section>
   )
 }
 
 export function MatchResult({
-  eyebrow = 'Analysis complete',
+  eyebrow,
   result,
-  title = 'Match report',
+  title,
 }: MatchResultProps) {
+  const { t } = useI18n()
+
   return (
     <section className="results" aria-live="polite">
       <div className="result-overview">
         <div
           className="score-card"
-          aria-label={`Match score: ${result.matchScore} out of 100`}
+          aria-label={t('result.scoreAria', {
+            score: result.matchScore,
+          })}
         >
-          <span>Match score</span>
+          <span>{t('result.scoreLabel')}</span>
           <strong>
             {result.matchScore}
             <small>/100</small>
@@ -59,34 +66,34 @@ export function MatchResult({
         </div>
 
         <div>
-          <p className="eyebrow">{eyebrow}</p>
-          <h2>{title}</h2>
+          <p className="eyebrow">{eyebrow ?? t('result.eyebrow')}</p>
+          <h2>{title ?? t('result.matchReport')}</h2>
           <p className="summary">{result.summary}</p>
         </div>
       </div>
 
       <div className="result-grid">
         <ListCard
-          title="Strong points"
-          description="Signals already aligned with the role"
+          title={t('result.strong.title')}
+          description={t('result.strong.description')}
           items={result.strongPoints}
           tone="positive"
         />
         <ListCard
-          title="Weak points"
-          description="Areas that need clearer evidence"
+          title={t('result.weak.title')}
+          description={t('result.weak.description')}
           items={result.weakPoints}
           tone="warning"
         />
         <ListCard
-          title="Missing keywords"
-          description="Terms worth reflecting if they are accurate"
+          title={t('result.missing.title')}
+          description={t('result.missing.description')}
           items={result.missingKeywords}
           tone="neutral"
         />
         <ListCard
-          title="Recommended resume bullets"
-          description="Practical edits to make the resume stronger"
+          title={t('result.bullets.title')}
+          description={t('result.bullets.description')}
           items={result.recommendedBullets}
           tone="positive"
         />
@@ -96,8 +103,8 @@ export function MatchResult({
         <section className="result-card draft-card">
           <div className="result-card-header">
             <div>
-              <h3>Cover letter draft</h3>
-              <p>Use as a starting point, then personalize it.</p>
+              <h3>{t('result.coverLetter.title')}</h3>
+              <p>{t('result.coverLetter.description')}</p>
             </div>
           </div>
           <p>{result.coverLetterDraft}</p>
@@ -105,8 +112,8 @@ export function MatchResult({
         <section className="result-card draft-card">
           <div className="result-card-header">
             <div>
-              <h3>LinkedIn message</h3>
-              <p>Short outreach draft for recruiters or hiring teams.</p>
+              <h3>{t('result.linkedin.title')}</h3>
+              <p>{t('result.linkedin.description')}</p>
             </div>
           </div>
           <p>{result.linkedinMessageDraft}</p>

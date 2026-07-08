@@ -48,6 +48,7 @@ async function getErrorMessage(
 
 export async function analyzeJobMatch(
   request: JobMatchRequest,
+  fallbackMessage = 'The analysis could not be completed.',
 ): Promise<JobMatchResponse> {
   const response = await fetch('/api/job-match/analyze', {
     method: 'POST',
@@ -61,7 +62,7 @@ export async function analyzeJobMatch(
     throw new Error(
       await getErrorMessage(
         response,
-        'The analysis could not be completed.',
+        fallbackMessage,
       ),
     )
   }
@@ -71,6 +72,7 @@ export async function analyzeJobMatch(
 
 export async function uploadResumePdf(
   file: File,
+  fallbackMessage = 'The resume PDF could not be uploaded.',
 ): Promise<ResumeUploadResponse> {
   const formData = new FormData()
   formData.append('file', file)
@@ -84,7 +86,7 @@ export async function uploadResumePdf(
     throw new Error(
       await getErrorMessage(
         response,
-        'The resume PDF could not be uploaded.',
+        fallbackMessage,
       ),
     )
   }
@@ -92,14 +94,16 @@ export async function uploadResumePdf(
   return (await response.json()) as ResumeUploadResponse
 }
 
-export async function getJobMatchHistory(): Promise<JobMatchHistoryItem[]> {
+export async function getJobMatchHistory(
+  fallbackMessage = 'The analysis history could not be loaded.',
+): Promise<JobMatchHistoryItem[]> {
   const response = await fetch('/api/job-match/history')
 
   if (!response.ok) {
     throw new Error(
       await getErrorMessage(
         response,
-        'The analysis history could not be loaded.',
+        fallbackMessage,
       ),
     )
   }
@@ -109,6 +113,7 @@ export async function getJobMatchHistory(): Promise<JobMatchHistoryItem[]> {
 
 export async function getJobMatchHistoryDetail(
   id: string,
+  fallbackMessage = 'The saved analysis could not be loaded.',
 ): Promise<JobMatchHistoryDetail> {
   const response = await fetch(`/api/job-match/history/${id}`)
 
@@ -116,7 +121,7 @@ export async function getJobMatchHistoryDetail(
     throw new Error(
       await getErrorMessage(
         response,
-        'The saved analysis could not be loaded.',
+        fallbackMessage,
       ),
     )
   }

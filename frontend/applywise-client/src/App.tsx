@@ -4,11 +4,14 @@ import { JobMatchForm } from './components/JobMatchForm'
 import { MatchResult } from './components/MatchResult'
 import { useJobMatchHistory } from './hooks/useJobMatchHistory'
 import { useJobMatchHistoryDetail } from './hooks/useJobMatchHistoryDetail'
+import { supportedLanguages } from './i18n/translations'
+import { useI18n } from './i18n/useI18n'
 import { analyzeJobMatch } from './services/jobMatchApi'
 import type { JobMatchRequest, JobMatchResponse } from './types/jobMatch'
 import './App.css'
 
 function App() {
+  const { language, setLanguage, t } = useI18n()
   const [result, setResult] = useState<JobMatchResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -17,7 +20,7 @@ function App() {
     history,
     isLoading: isHistoryLoading,
     refresh: refreshHistory,
-  } = useJobMatchHistory()
+  } = useJobMatchHistory(t('api.historyFailed'))
   const {
     analysis: historyDetail,
     clear: clearHistorySelection,
@@ -25,7 +28,7 @@ function App() {
     isLoading: isHistoryDetailLoading,
     select: selectHistoryItem,
     selectedId: selectedHistoryId,
-  } = useJobMatchHistoryDetail()
+  } = useJobMatchHistoryDetail(t('api.historyDetailFailed'))
 
   async function handleAnalyze(request: JobMatchRequest) {
     setIsLoading(true)
@@ -33,13 +36,21 @@ function App() {
     setResult(null)
 
     try {
-      setResult(await analyzeJobMatch(request))
+      setResult(
+        await analyzeJobMatch(
+          {
+            ...request,
+            language,
+          },
+          t('api.analysisFailed'),
+        ),
+      )
       void refreshHistory()
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
           ? caughtError.message
-          : 'An unexpected error occurred.',
+          : t('api.unexpectedError'),
       )
     } finally {
       setIsLoading(false)
@@ -49,28 +60,42 @@ function App() {
   return (
     <main className="app-shell">
       <header className="app-header">
-        <a className="brand" href="/" aria-label="ApplyWise home">
+        <a className="brand" href="/" aria-label={t('app.homeAriaLabel')}>
           <span className="brand-mark">A</span>
           <span>ApplyWise</span>
         </a>
-        <span className="local-badge">
-          <span aria-hidden="true" />
-          Private workspace
-        </span>
+        <div className="header-actions">
+          <span className="local-badge">
+            <span aria-hidden="true" />
+            {t('app.privateWorkspace')}
+          </span>
+          <div
+            className="language-switcher"
+            aria-label={t('language.switchLabel')}
+          >
+            {supportedLanguages.map((option) => (
+              <button
+                key={option.code}
+                type="button"
+                aria-pressed={language === option.code}
+                className={language === option.code ? 'active' : ''}
+                onClick={() => setLanguage(option.code)}
+              >
+                {option.shortLabel}
+              </button>
+            ))}
+          </div>
+        </div>
       </header>
 
       <section className="hero-copy">
-        <p className="eyebrow">Resume match workspace</p>
-        <h1>Compare your resume with the role before you apply.</h1>
-        <p>
-          Upload a PDF or paste your resume, add the job description, and
-          review the gaps, strengths, and edits worth making before you send
-          the application.
-        </p>
-        <div className="hero-meta" aria-label="Analysis workflow">
-          <span>PDF or pasted resume</span>
-          <span>Role description</span>
-          <span>Actionable match report</span>
+        <p className="eyebrow">{t('hero.eyebrow')}</p>
+        <h1>{t('hero.title')}</h1>
+        <p>{t('hero.body')}</p>
+        <div className="hero-meta" aria-label={t('hero.workflowAria')}>
+          <span>{t('hero.workflow.resume')}</span>
+          <span>{t('hero.workflow.role')}</span>
+          <span>{t('hero.workflow.report')}</span>
         </div>
       </section>
 
@@ -80,15 +105,15 @@ function App() {
         <div className="status-card" role="status">
           <span className="spinner" aria-hidden="true" />
           <div>
-            <strong>Analyzing your match</strong>
-            <p>The local model is reading both documents.</p>
+            <strong>{t('status.analyzing.title')}</strong>
+            <p>{t('status.analyzing.body')}</p>
           </div>
         </div>
       )}
 
       {error && (
         <div className="status-card error-card" role="alert">
-          <strong>Analysis failed</strong>
+          <strong>{t('status.error.title')}</strong>
           <p>{error}</p>
         </div>
       )}
@@ -108,7 +133,7 @@ function App() {
       />
 
       <footer>
-        ApplyWise · Resume review workspace
+        {t('footer.label')}
       </footer>
     </main>
   )

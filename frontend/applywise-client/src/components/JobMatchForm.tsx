@@ -3,6 +3,7 @@ import {
   type ChangeEvent,
   type FormEvent,
 } from 'react'
+import { useI18n } from '../i18n/useI18n'
 import { uploadResumePdf } from '../services/jobMatchApi'
 import type {
   JobMatchRequest,
@@ -22,6 +23,7 @@ export function JobMatchForm({
   isLoading,
   onSubmit,
 }: JobMatchFormProps) {
+  const { t } = useI18n()
   const [resumeText, setResumeText] = useState('')
   const [jobDescription, setJobDescription] = useState('')
   const [resumeUpload, setResumeUpload] =
@@ -49,7 +51,13 @@ export function JobMatchForm({
     setResumeUpload(null)
     setResumeUploadError(null)
 
-    const validationError = getResumePdfValidationError(file)
+    const validationError = getResumePdfValidationError(file, {
+      emptyFile: t('validation.resumeFile.empty'),
+      invalidType: t('validation.resumeFile.invalidType'),
+      tooLarge: t('validation.resumeFile.tooLarge', {
+        maxSize: maxResumePdfSizeLabel,
+      }),
+    })
 
     if (validationError) {
       setResumeUploadError(validationError)
@@ -61,14 +69,17 @@ export function JobMatchForm({
     setIsResumeUploading(true)
 
     try {
-      const upload = await uploadResumePdf(file)
+      const upload = await uploadResumePdf(
+        file,
+        t('api.resumeUploadFailed'),
+      )
       setResumeText(upload.extractedText)
       setResumeUpload(upload)
     } catch (caughtError) {
       setResumeUploadError(
         caughtError instanceof Error
           ? caughtError.message
-          : 'The resume PDF could not be uploaded.',
+          : t('api.resumeUploadFailed'),
       )
     } finally {
       event.target.value = ''
@@ -93,26 +104,36 @@ export function JobMatchForm({
     <form className="match-form" onSubmit={handleSubmit}>
       <div className="form-heading">
         <div>
-          <p className="eyebrow">New analysis</p>
-          <h2>Start with your resume and target role</h2>
+          <p className="eyebrow">{t('form.eyebrow')}</p>
+          <h2>{t('form.title')}</h2>
         </div>
-        <span>Nothing is submitted until you run the analysis.</span>
+        <span>{t('form.privacyNote')}</span>
       </div>
 
       <div className="input-grid">
         <div className="text-field">
           <span className="field-heading">
-            <label htmlFor="resume-text">Resume</label>
-            <small>PDF upload or plain text</small>
+            <label htmlFor="resume-text">{t('form.resume.label')}</label>
+            <small>{t('form.resume.helper')}</small>
           </span>
 
           <div className="resume-upload">
             <div>
-              <strong>Resume PDF</strong>
+              <strong>{t('form.resumeUpload.title')}</strong>
               <span>
                 {resumeUpload
-                  ? `${resumeUpload.fileName} · ${resumeUpload.pageCount} page${resumeUpload.pageCount === 1 ? '' : 's'} extracted`
-                  : `Max ${maxResumePdfSizeLabel}, selectable text only`}
+                  ? t('form.resumeUpload.extracted', {
+                      fileName: resumeUpload.fileName,
+                      pageCount: resumeUpload.pageCount,
+                      pageLabel: t(
+                        resumeUpload.pageCount === 1
+                          ? 'common.page'
+                          : 'common.pages',
+                      ),
+                    })
+                  : t('form.resumeUpload.max', {
+                      maxSize: maxResumePdfSizeLabel,
+                    })}
               </span>
             </div>
             <label className="file-upload-button">
@@ -122,7 +143,9 @@ export function JobMatchForm({
                 disabled={isLoading || isResumeUploading}
                 onChange={handleResumeFileChange}
               />
-              {isResumeUploading ? 'Extracting…' : 'Choose PDF'}
+              {isResumeUploading
+                ? t('form.resumeUpload.extracting')
+                : t('form.resumeUpload.choose')}
             </label>
           </div>
 
@@ -139,7 +162,7 @@ export function JobMatchForm({
               setResumeText(event.target.value)
               setResumeUpload(null)
             }}
-            placeholder="Paste your resume text here, or upload a PDF above..."
+            placeholder={t('form.resume.placeholder')}
             rows={14}
             disabled={isLoading || isResumeUploading}
           />
@@ -147,14 +170,14 @@ export function JobMatchForm({
 
         <div className="text-field">
           <span className="field-heading">
-            <label htmlFor="job-description">Job description</label>
-            <small>Requirements and responsibilities</small>
+            <label htmlFor="job-description">{t('form.job.label')}</label>
+            <small>{t('form.job.helper')}</small>
           </span>
           <textarea
             id="job-description"
             value={jobDescription}
             onChange={(event) => setJobDescription(event.target.value)}
-            placeholder="Paste the role description, requirements, and responsibilities here..."
+            placeholder={t('form.job.placeholder')}
             rows={14}
             disabled={isLoading}
           />
@@ -162,13 +185,13 @@ export function JobMatchForm({
       </div>
 
       <div className="form-footer">
-        <p>You can edit extracted text before running the comparison.</p>
+        <p>{t('form.footerNote')}</p>
         <button type="submit" disabled={!canSubmit}>
           {isResumeUploading
-            ? 'Extracting resume…'
+            ? t('form.button.extractingResume')
             : isLoading
-              ? 'Analyzing…'
-              : 'Run analysis'}
+              ? t('form.button.analyzing')
+              : t('form.button.runAnalysis')}
         </button>
       </div>
     </form>

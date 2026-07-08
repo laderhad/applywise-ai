@@ -24,11 +24,13 @@ public sealed class JobMatchService
     public async Task<AnalyzeJobMatchResponse> AnalyzeAsync(
         string resumeText,
         string jobDescription,
+        string language,
         CancellationToken cancellationToken)
     {
         var response = await _ollamaService.AnalyzeAsync(
             resumeText,
             jobDescription,
+            language,
             cancellationToken);
 
         var analysis = _mapper.Map<JobMatchAnalysis>(response);

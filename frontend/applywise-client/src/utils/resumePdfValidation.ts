@@ -1,17 +1,32 @@
 export const maxResumePdfSizeBytes = 5 * 1024 * 1024
 export const maxResumePdfSizeLabel = '5 MB'
 
-export function getResumePdfValidationError(file: File): string | null {
+interface ResumePdfValidationMessages {
+  emptyFile: string
+  invalidType: string
+  tooLarge: string
+}
+
+const defaultMessages: ResumePdfValidationMessages = {
+  emptyFile: 'Resume file cannot be empty.',
+  invalidType: 'Resume file must be a PDF.',
+  tooLarge: `Resume file must be ${maxResumePdfSizeLabel} or smaller.`,
+}
+
+export function getResumePdfValidationError(
+  file: File,
+  messages = defaultMessages,
+): string | null {
   if (file.size === 0) {
-    return 'Resume file cannot be empty.'
+    return messages.emptyFile
   }
 
   if (file.size > maxResumePdfSizeBytes) {
-    return `Resume file must be ${maxResumePdfSizeLabel} or smaller.`
+    return messages.tooLarge
   }
 
   if (!isPdfFile(file)) {
-    return 'Resume file must be a PDF.'
+    return messages.invalidType
   }
 
   return null

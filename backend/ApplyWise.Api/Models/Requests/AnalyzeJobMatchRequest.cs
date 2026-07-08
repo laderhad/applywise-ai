@@ -9,4 +9,6 @@ public class AnalyzeJobMatchRequest
 
     [RequiredText(ErrorMessage = "Job description is required.")]
     public string JobDescription { get; init; } = string.Empty;
+
+    public string Language { get; init; } = "en";
 }

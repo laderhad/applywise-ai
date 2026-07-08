@@ -60,6 +60,7 @@ public class JobMatchController : ControllerBase
         var response = await _jobMatchService.AnalyzeAsync(
             request.ResumeText,
             request.JobDescription,
+            request.Language,
             cancellationToken);
 
         return Ok(response);

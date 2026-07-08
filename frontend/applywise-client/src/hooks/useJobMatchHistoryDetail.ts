@@ -2,9 +2,7 @@ import { useCallback, useRef, useState } from 'react'
 import { getJobMatchHistoryDetail } from '../services/jobMatchApi'
 import type { JobMatchHistoryDetail } from '../types/jobMatch'
 
-const fallbackError = 'The saved analysis could not be loaded.'
-
-export function useJobMatchHistoryDetail() {
+export function useJobMatchHistoryDetail(fallbackError: string) {
   const [analysis, setAnalysis] =
     useState<JobMatchHistoryDetail | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -21,7 +19,7 @@ export function useJobMatchHistoryDetail() {
     setIsLoading(true)
 
     try {
-      const detail = await getJobMatchHistoryDetail(id)
+      const detail = await getJobMatchHistoryDetail(id, fallbackError)
 
       if (currentRequest === requestVersion.current) {
         setAnalysis(detail)
@@ -39,7 +37,7 @@ export function useJobMatchHistoryDetail() {
         setIsLoading(false)
       }
     }
-  }, [])
+  }, [fallbackError])
 
   const clear = useCallback(() => {
     requestVersion.current += 1

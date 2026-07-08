@@ -2,8 +2,13 @@ namespace ApplyWise.Api.Prompts;
 
 public static class JobMatchPromptBuilder
 {
-    public static string Build(string resumeText, string jobDescription)
+    public static string Build(
+        string resumeText,
+        string jobDescription,
+        string language = "en")
     {
+        var responseLanguage = GetResponseLanguage(language);
+
         return $$"""
             You are an expert resume and job description matching assistant.
 
@@ -20,7 +25,8 @@ public static class JobMatchPromptBuilder
             Output rules:
             - Return exactly one valid JSON object.
             - Do not return Markdown, code fences, comments, or extra explanation.
-            - Write all descriptive content in English.
+            - Write all descriptive string values in {{responseLanguage}}.
+            - Keep JSON property names exactly as shown in the schema.
             - matchScore must be an integer between 0 and 100.
             - strongPoints and weakPoints must be specific and evidence-based.
             - missingKeywords must come from the job description and be absent from
@@ -74,5 +80,15 @@ public static class JobMatchPromptBuilder
             Final evidence check: the job description must not introduce any factual
             claim about the candidate. Return only the JSON object.
             """;
+    }
+
+    private static string GetResponseLanguage(string language)
+    {
+        return string.Equals(
+            language,
+            "tr",
+            StringComparison.OrdinalIgnoreCase)
+            ? "Turkish. Use natural, professional Turkish."
+            : "English. Use natural, professional English.";
     }
 }

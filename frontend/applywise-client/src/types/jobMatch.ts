@@ -1,6 +1,9 @@
+export type JobMatchLanguage = 'en' | 'tr'
+
 export interface JobMatchRequest {
   resumeText: string
   jobDescription: string
+  language?: JobMatchLanguage
 }
 
 export interface ResumeUploadResponse {
