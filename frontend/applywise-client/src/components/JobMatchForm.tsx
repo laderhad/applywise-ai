@@ -8,6 +8,10 @@ import type {
   JobMatchRequest,
   ResumeUploadResponse,
 } from '../types/jobMatch'
+import {
+  getResumePdfValidationError,
+  maxResumePdfSizeLabel,
+} from '../utils/resumePdfValidation'
 
 interface JobMatchFormProps {
   isLoading: boolean
@@ -42,9 +46,19 @@ export function JobMatchForm({
       return
     }
 
-    setIsResumeUploading(true)
     setResumeUpload(null)
     setResumeUploadError(null)
+
+    const validationError = getResumePdfValidationError(file)
+
+    if (validationError) {
+      setResumeUploadError(validationError)
+      event.target.value = ''
+
+      return
+    }
+
+    setIsResumeUploading(true)
 
     try {
       const upload = await uploadResumePdf(file)
@@ -97,7 +111,7 @@ export function JobMatchForm({
             <span>
               {resumeUpload
                 ? `${resumeUpload.fileName} · ${resumeUpload.pageCount} page${resumeUpload.pageCount === 1 ? '' : 's'}`
-                : 'Max 5 MB, selectable text only'}
+                : `Max ${maxResumePdfSizeLabel}, selectable text only`}
             </span>
           </div>
 
@@ -110,7 +124,10 @@ export function JobMatchForm({
           <textarea
             id="resume-text"
             value={resumeText}
-            onChange={(event) => setResumeText(event.target.value)}
+            onChange={(event) => {
+              setResumeText(event.target.value)
+              setResumeUpload(null)
+            }}
             placeholder="Paste your resume text here..."
             rows={14}
             disabled={isLoading || isResumeUploading}
