@@ -22,16 +22,15 @@
   text-decoration: none;
 }
 
-.brand-mark {
-  display: grid;
-  width: 32px;
-  height: 32px;
-  place-items: center;
-  color: #ffffff;
-  font-size: 0.9rem;
-  font-weight: 760;
-  background: var(--brand);
-  border-radius: 8px;
+.brand-logo {
+  display: block;
+  width: 34px;
+  height: 34px;
+  object-fit: cover;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  box-shadow: var(--shadow-xs);
 }
 
 .header-actions {

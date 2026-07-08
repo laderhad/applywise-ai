@@ -61,7 +61,14 @@ function App() {
     <main className="app-shell">
       <header className="app-header">
         <a className="brand" href="/" aria-label={t('app.homeAriaLabel')}>
-          <span className="brand-mark">A</span>
+          <img
+            className="brand-logo"
+            src="/applywise.png"
+            alt=""
+            aria-hidden="true"
+            width="34"
+            height="34"
+          />
           <span>ApplyWise</span>
         </a>
         <div className="header-actions">
