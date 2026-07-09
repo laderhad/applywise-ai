@@ -1,34 +1,129 @@
-# ApplyWise AI
+# ApplyWise
 
-ApplyWise AI is a local-first CV and job description matching application. It
-uses React, ASP.NET Core, and a local Ollama model to produce a structured,
-evidence-based analysis.
+ApplyWise is a local-first resume analysis and job matching MVP. It lets users
+upload a resume PDF or paste resume text, compare it with a job description,
+and review a structured match report with strengths, weak points, missing
+keywords, suggested resume bullets, a cover letter draft, and a LinkedIn
+message draft.
 
-## Prerequisites
+The app is designed as a serious career-tech SaaS prototype: React on the
+frontend, ASP.NET Core on the backend, PostgreSQL for saved analyses, and
+Ollama for local AI inference.
+
+## Features
+
+- Resume PDF upload with text extraction and client-side validation
+- Resume text and job description comparison
+- Match score, strengths, weak points, missing keywords, and practical edits
+- Cover letter and LinkedIn outreach drafts
+- Saved analysis history with detail view
+- English and Turkish UI localization
+- Language-aware AI output request (`en` / `tr`)
+- Docker Compose setup for frontend, backend, PostgreSQL, and Ollama
+
+## Tech stack
+
+- Frontend: React 19, TypeScript, Vite, CSS
+- Backend: ASP.NET Core 10, Entity Framework Core, AutoMapper
+- Database: PostgreSQL
+- AI runtime: Ollama
+- PDF extraction: PdfPig
+- Containerization: Docker Compose
+
+## Quick start with Docker Compose
+
+Docker Compose runs the full stack:
+
+- Frontend: `http://localhost:5173`
+- Backend API: `http://localhost:5232`
+- PostgreSQL: `localhost:5432`
+- Ollama: internal Docker network service
+
+Start the app:
+
+```bash
+docker compose up -d --build
+```
+
+Open:
+
+```text
+http://localhost:5173
+```
+
+The first run may take time because the default Ollama model is pulled into the
+Docker volume.
+
+### Reuse existing local Ollama models
+
+If you already have models under `~/.ollama`, you can reuse them from Docker:
+
+```bash
+OLLAMA_MODELS_PATH=$HOME/.ollama docker compose up -d --build
+```
+
+This still runs the Ollama server inside Docker; it only reuses the model files
+so you do not download the same model again.
+
+### Select another model
+
+The default model is `llama3.1:8b`.
+
+To use another model:
+
+```bash
+OLLAMA_MODEL=gemma3:4b docker compose up -d --build
+```
+
+### Environment variables
+
+Copy the example file if you want local overrides:
+
+```bash
+cp .env.example .env
+```
+
+Available values:
+
+```env
+POSTGRES_DB=applywise
+POSTGRES_USER=applywise
+POSTGRES_PASSWORD=applywise_dev
+POSTGRES_PORT=5432
+OLLAMA_MODEL=llama3.1:8b
+```
+
+The PostgreSQL data is stored in the `postgres-data` Docker volume. Ollama model
+data is stored in the `ollama-data` Docker volume unless `OLLAMA_MODELS_PATH` is
+provided.
+
+### Stop the stack
+
+```bash
+docker compose down
+```
+
+Remove containers and local Docker volumes:
+
+```bash
+docker compose down --volumes
+```
+
+## Local development without Docker
+
+For daily frontend/backend development, you can run services manually.
+
+Prerequisites:
 
 - .NET 10 SDK
 - Node.js 24 and npm
+- PostgreSQL
 - Ollama
-- Docker Desktop (only for the container workflow)
 
-Pull the default model once:
+Install/pull the default model:
 
 ```bash
 ollama pull llama3.1:8b
-```
-
-To use the lighter fallback model instead:
-
-```bash
-ollama pull gemma3:4b
-```
-
-## Run for development
-
-Restore the repository's .NET tools:
-
-```bash
-dotnet tool restore
 ```
 
 Start Ollama:
@@ -37,7 +132,7 @@ Start Ollama:
 ollama serve
 ```
 
-Start the backend in another terminal:
+Start the backend:
 
 ```bash
 dotnet run \
@@ -45,64 +140,47 @@ dotnet run \
   --launch-profile http
 ```
 
-Start the frontend in another terminal:
+Start the frontend:
 
 ```bash
 npm --prefix frontend/applywise-client run dev
 ```
 
-Open `http://localhost:5173`.
+Open:
 
-## Run the app with Docker Compose
-
-Ollama intentionally runs natively on macOS so it can use Metal GPU
-acceleration. The backend and frontend run in containers.
-
-Ollama binds to localhost by default. To make it reachable from Docker for the
-current terminal session, quit any running Ollama app and start:
-
-```bash
-OLLAMA_HOST=0.0.0.0:11434 ollama serve
+```text
+http://localhost:5173
 ```
 
-Only expose Ollama this way on a trusted local network. Then start ApplyWise:
+## Useful commands
+
+Frontend lint:
 
 ```bash
-docker compose up --build
+npm --prefix frontend/applywise-client run lint
 ```
 
-Open `http://localhost:5173`. The backend is also available directly at
-`http://localhost:5232`. PostgreSQL is available at `localhost:5432`.
-
-The Compose defaults are intended only for local development. To customize
-them, copy the example environment file:
+Frontend production build:
 
 ```bash
-cp .env.example .env
+npm --prefix frontend/applywise-client run build
 ```
 
-Then edit `.env` before starting the stack. PostgreSQL data is stored in the
-named `postgres-data` volume, so it survives container recreation.
-
-To select another installed model:
+Backend build:
 
 ```bash
-OLLAMA_MODEL=gemma3:4b docker compose up --build
+dotnet build backend/ApplyWise.Api/ApplyWise.Api.csproj --no-restore
 ```
 
-Stop the containers:
+Backend tests:
 
 ```bash
-docker compose down
+dotnet run --project backend/ApplyWise.Api.Tests/ApplyWise.Api.Tests.csproj --no-restore
 ```
 
-To also delete the local PostgreSQL data:
+## API overview
 
-```bash
-docker compose down --volumes
-```
-
-## API
+### Analyze resume and job description
 
 ```http
 POST /api/job-match/analyze
@@ -111,11 +189,57 @@ Content-Type: application/json
 
 ```json
 {
-  "resumeText": "C# and React developer",
-  "jobDescription": "We are looking for a full-stack developer."
+  "resumeText": "ASP.NET Core backend developer with PostgreSQL and Docker experience.",
+  "jobDescription": "We are hiring a backend engineer with ASP.NET Core, PostgreSQL, Docker, and REST API experience.",
+  "language": "en"
 }
 ```
 
-The API returns a match score, strengths, weaknesses, missing keywords,
-recommended CV bullets, a cover letter draft, a LinkedIn message, and a short
-summary.
+Use `"language": "tr"` to ask the model for Turkish descriptive content. JSON
+field names stay the same.
+
+### Get analysis history
+
+```http
+GET /api/job-match/history
+```
+
+### Get analysis detail
+
+```http
+GET /api/job-match/history/{id}
+```
+
+### Upload resume PDF
+
+```http
+POST /api/resumes/upload
+Content-Type: multipart/form-data
+```
+
+Field name:
+
+```text
+file
+```
+
+## Project structure
+
+```text
+.
+├── backend/
+│   ├── ApplyWise.Api/          # ASP.NET Core API
+│   └── ApplyWise.Api.Tests/    # xUnit test project
+├── frontend/
+│   └── applywise-client/       # React + TypeScript client
+├── compose.yaml                # Full local Docker stack
+└── .env.example                # Optional local environment overrides
+```
+
+## Notes
+
+- The app is intended for local development and portfolio/demo use.
+- AI analysis is generated by the configured local Ollama model.
+- The model is instructed to avoid inventing candidate experience and to keep
+  claims grounded in the resume text.
+- Saved analyses are persisted in PostgreSQL.
