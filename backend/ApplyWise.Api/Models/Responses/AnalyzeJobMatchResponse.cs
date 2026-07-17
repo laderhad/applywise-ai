@@ -4,6 +4,8 @@ public class AnalyzeJobMatchResponse
 {
     public int MatchScore { get; init; }
 
+    public ScoreBreakdownResponse ScoreBreakdown { get; init; } = new();
+
     public List<string> StrongPoints { get; init; } = [];
 
     public List<string> WeakPoints { get; init; } = [];

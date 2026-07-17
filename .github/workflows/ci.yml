@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend build and tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore backend
+        run: dotnet restore backend/ApplyWise.Api/ApplyWise.Api.csproj
+
+      - name: Restore tests
+        run: dotnet restore backend/ApplyWise.Api.Tests/ApplyWise.Api.Tests.csproj
+
+      - name: Build backend
+        run: dotnet build backend/ApplyWise.Api/ApplyWise.Api.csproj --configuration Release --no-restore
+
+      - name: Run backend tests
+        run: dotnet run --project backend/ApplyWise.Api.Tests/ApplyWise.Api.Tests.csproj --configuration Release --no-restore
+
+  frontend:
+    name: Frontend lint and build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend/applywise-client
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/applywise-client/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build

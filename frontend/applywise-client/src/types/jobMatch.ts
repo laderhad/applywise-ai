@@ -13,8 +13,19 @@ export interface ResumeUploadResponse {
   extractedText: string
 }
 
+export interface ScoreBreakdown {
+  deterministicScore: number
+  matchedSkillCount: number
+  requiredSkillCount: number
+  matchedSkills: string[]
+  missingSkills: string[]
+  usedLlmFallback: boolean
+  explanation: string
+}
+
 export interface JobMatchResponse {
   matchScore: number
+  scoreBreakdown?: ScoreBreakdown
   strongPoints: string[]
   weakPoints: string[]
   missingKeywords: string[]
