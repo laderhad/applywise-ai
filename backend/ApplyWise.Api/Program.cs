@@ -23,6 +23,7 @@ builder.Services.AddDbContext<ApplyWiseDbContext>(options =>
 builder.Services.AddScoped<JobMatchService>();
 builder.Services.AddScoped<JobMatchHistoryService>();
 builder.Services.AddScoped<ResumeUploadService>();
+builder.Services.AddSingleton<DeterministicScoringService>();
 builder.Services.AddSingleton<PdfUploadValidator>();
 builder.Services.AddSingleton<PdfTextExtractor>();
 builder.Services
