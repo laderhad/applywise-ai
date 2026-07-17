@@ -25,7 +25,7 @@ export interface ScoreBreakdown {
 
 export interface JobMatchResponse {
   matchScore: number
-  scoreBreakdown: ScoreBreakdown
+  scoreBreakdown?: ScoreBreakdown
   strongPoints: string[]
   weakPoints: string[]
   missingKeywords: string[]
